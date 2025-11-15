@@ -45,7 +45,7 @@ pipeline {
                     docker pull ish337/test_site
 
                     echo "🚀 Starting new test_site container..."
-                    docker run -d --name test_site --restart=always -p 0.0.0.0:80  ish337/test_site
+                    docker run -d --name test_site --restart=always -p 80:80  ish337/test_site
                 '''
             } 
         }
