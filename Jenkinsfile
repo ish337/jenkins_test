@@ -36,16 +36,16 @@ pipeline {
             steps {
                 echo "🌐 Deploying Site container on remote server ..."
                 sh '''
-                    echo "🧹 Cleaning up old Nagios container and image..."
-                    docker stop site || true
-                    docker rm site || true
+                    echo "🧹 Cleaning up old site container and image..."
+                    docker stop test_site || true
+                    docker rm test_site || true
                     docker rmi ish337/test_site || true
 
-                    echo "⬇️ Pulling latest Nagios image..."
+                    echo "⬇️ Pulling latest site image..."
                     docker pull ish337/test_site
 
-                    echo "🚀 Starting new Nagios container..."
-                    docker run -d --name site --restart=always -p 0.0.0.0:80  ish337/test_site
+                    echo "🚀 Starting new test_site container..."
+                    docker run -d --name test_site --restart=always -p 0.0.0.0:80  ish337/test_site
                 '''
             } 
         }
