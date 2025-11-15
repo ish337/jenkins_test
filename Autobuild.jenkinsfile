@@ -1,40 +1,53 @@
 #!groovy
-//  groovy Jenkinsfile
-pipeline  {
-    agent any;
+
+pipeline {
+    agent any
+
     stages {
-        stage("Automated docker image build") {
+        stage("Create Site image") {
             steps {
-                echo 'Creating frontend docker image ...'
-                sh "docker build --no-cache -t macnaer/webserver . "                
+                echo '🧱 Building Site image ...'
+                sh "docker build --no-cache -t ish337/test_site ."
             }
         }
-        stage("docker login") {
+
+        stage("Docker login") {
             steps {
-                echo " ============== docker login =================="
+                echo "🔐 Logging in to DockerHub ..."
                 withCredentials([usernamePassword(credentialsId: 'DockerHub-Credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
-                    docker login -u $USERNAME -p $PASSWORD
+                        docker login -u $USERNAME -p $PASSWORD
                     '''
                 }
             }
         }
-        stage("docker image push") {
+
+        stage("Push Site to DockerHub") {
             steps {
-                echo " ============== pushing webserver image =================="
+                echo "🚀 Pushing Site image to DockerHub ..."
                 sh '''
-                docker push macnaer/webserver
-                '''
-            }
-        }
-	stage("docker image webserver run") {
-            steps {
-                echo " ============== Run webserer  =================="
-                sh '''
-                docker run -d --name=webserver --restart=always -p 80:80  macnaer/webserver
+                    docker push ish337/test_site
                 '''
             }
         }
 
+        stage("Deploy Site on remote server") {
+            agent { label 'agent1' }
+            steps {
+                echo "🌐 Deploying Site container on remote server ..."
+                sh '''
+                    echo "🧹 Cleaning up old Nagios container and image..."
+                    docker stop site || true
+                    docker rm site || true
+                    docker rmi ish337/test_site || true
+
+                    echo "⬇️ Pulling latest Nagios image..."
+                    docker pull ish337/test_site
+
+                    echo "🚀 Starting new Nagios container..."
+                    docker run -d --name site --restart=always -p 0.0.0.0:80  ish337/test_site
+                '''
+            } 
+        }
     }
 }
